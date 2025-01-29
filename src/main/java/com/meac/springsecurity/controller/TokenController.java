@@ -1,6 +1,7 @@
 package com.meac.springsecurity.controller;
 
 import com.meac.springsecurity.controller.dto.LoginResponse;
+import com.meac.springsecurity.entities.Role;
 import com.meac.springsecurity.entities.User;
 import com.meac.springsecurity.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.meac.springsecurity.controller.dto.LoginRequest;
 
 import java.time.Instant;
+import java.util.stream.Collectors;
 
 @RestController
 public class TokenController {
@@ -35,8 +37,16 @@ public class TokenController {
         var instantNow = Instant.now();
         var expireTime = 300L;
 
+
+
         // Verifica se o login é válido
         var user = userRepository.findByUsername(loginRequest.username());
+
+        var roles = user.get().getRoles()
+                .stream()
+                .map(role -> role.getName().toUpperCase()) // ADMIN
+                .collect(Collectors.toList());
+
 
         if (user.isEmpty() || !user.get().isLoginValid(loginRequest, bCryptPasswordEncoder)) {
             throw new BadCredentialsException("Invalid username or password");
@@ -45,8 +55,9 @@ public class TokenController {
         // Gera o token JWT
         var claims = JwtClaimsSet.builder().issuer("meac-backend")
                 .subject(user.get().getUserId().toString())
-                .expiresAt(instantNow.plusSeconds(expireTime))
                 .issuedAt(instantNow)
+                .expiresAt(instantNow.plusSeconds(expireTime))
+                .claim("roles", roles)
                 .build();
 
         var jwtValue = jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
