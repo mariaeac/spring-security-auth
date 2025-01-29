@@ -14,6 +14,8 @@ public class Post {
     @Column(name = "post_id")
     private Long postId;
 
+    @ManyToOne
+    @JoinColumn(name = "user_id")
     private User user;
 
     private String content;
