@@ -48,18 +48,20 @@ public class PostsController {
         if(isAdmin) {
             postRepository.deleteById(id);
             return ResponseEntity.ok().build();
+        } else {
+            var post = postRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+            // Verifica se o post pertence ao usuário logado:
+            if (!post.getUser().getUserId().equals(UUID.fromString(jwtToken.getName()))) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
+
+            postRepository.deleteById(id);
+
+            return ResponseEntity.ok().build();
         }
 
 
-        var post = postRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
-        // Verifica se o post pertence ao usuário logado:
-        if (!post.getUser().getUserId().equals(UUID.fromString(jwtToken.getName()))) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
 
-        postRepository.deleteById(id);
-
-        return ResponseEntity.ok().build();
     }
 }

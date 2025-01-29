@@ -36,3 +36,6 @@ build/
 ## JWT Config Keys
 src/main/resources/app.pub
 src/main/resources/app.key
+
+#Bruno
+*.bru
