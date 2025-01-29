@@ -1,16 +1,23 @@
 package com.meac.springsecurity.controller;
 
 import com.meac.springsecurity.controller.dto.CreatePostDTO;
+import com.meac.springsecurity.controller.dto.FeedDTO;
+import com.meac.springsecurity.controller.dto.FeedItemDTO;
 import com.meac.springsecurity.entities.Post;
 import com.meac.springsecurity.entities.Role;
 import com.meac.springsecurity.repositories.PostRepository;
 import com.meac.springsecurity.repositories.UserRepository;
+import org.apache.coyote.Response;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -22,6 +29,15 @@ public class PostsController {
     public PostsController(PostRepository postRepository, UserRepository userRepository) {
         this.postRepository = postRepository;
         this.userRepository = userRepository;
+    }
+
+    @GetMapping("/feed")
+    public ResponseEntity<List<FeedDTO>> getAllPosts(@RequestParam(value = "page", defaultValue = "0") int page,
+                                                     @RequestParam(value = "pageSize", defaultValue = "10") int pageSize
+                                                     ) {
+       var posts =  postRepository.findAll(PageRequest.of(page, pageSize, Sort.Direction.DESC, "creationTimeStamp")).map(post -> new FeedItemDTO(post.getPostId(), post.getContent(), post.getUser().getUsername()));
+       return ResponseEntity.ok(Collections.singletonList(new FeedDTO(posts.getContent(), page, pageSize, posts.getTotalPages(), posts.getTotalElements())));
+
     }
 
     @PostMapping("/posts")
