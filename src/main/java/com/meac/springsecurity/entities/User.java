@@ -2,7 +2,6 @@ package com.meac.springsecurity.entities;
 
 import jakarta.persistence.*;
 
-import javax.management.relation.Role;
 import java.util.Set;
 import java.util.UUID;
 
