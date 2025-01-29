@@ -4,11 +4,11 @@ import com.meac.springsecurity.controller.dto.CreatePostDTO;
 import com.meac.springsecurity.entities.Post;
 import com.meac.springsecurity.repositories.PostRepository;
 import com.meac.springsecurity.repositories.UserRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.UUID;
 
@@ -35,5 +35,18 @@ public class PostsController {
         postRepository.save(newPost);
         return ResponseEntity.ok().build();
 
+    }
+
+    @DeleteMapping(value = "/posts/{id}")
+    public ResponseEntity<Void> deletePost(@PathVariable("id") Long id, JwtAuthenticationToken jwtToken) {
+        var post = postRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        // Verifica se o post pertence ao usuário logado:
+        if (!post.getUser().getUserId().equals(UUID.fromString(jwtToken.getName()))) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        postRepository.deleteById(id);
+
+        return ResponseEntity.ok().build();
     }
 }

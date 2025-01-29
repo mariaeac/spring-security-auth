@@ -1,0 +1,21 @@
+meta {
+  name: Delete post
+  type: http
+  seq: 5
+}
+
+delete {
+  url: http://localhost:9090/posts
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "content": "Hello, world!"
+  }}
+}
