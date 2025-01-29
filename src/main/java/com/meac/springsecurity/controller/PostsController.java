@@ -2,6 +2,7 @@ package com.meac.springsecurity.controller;
 
 import com.meac.springsecurity.controller.dto.CreatePostDTO;
 import com.meac.springsecurity.entities.Post;
+import com.meac.springsecurity.entities.Role;
 import com.meac.springsecurity.repositories.PostRepository;
 import com.meac.springsecurity.repositories.UserRepository;
 import org.springframework.http.HttpStatus;
@@ -39,7 +40,19 @@ public class PostsController {
 
     @DeleteMapping(value = "/posts/{id}")
     public ResponseEntity<Void> deletePost(@PathVariable("id") Long id, JwtAuthenticationToken jwtToken) {
+
+        // Verificação para ver se o usuário é admin
+        var user = userRepository.findById(UUID.fromString(jwtToken.getName()));
+        boolean isAdmin = user.get().getRoles().stream().anyMatch(role -> role.getName().equals(Role.Values.ADMIN.name()));
+
+        if(isAdmin) {
+            postRepository.deleteById(id);
+            return ResponseEntity.ok().build();
+        }
+
+
         var post = postRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+
         // Verifica se o post pertence ao usuário logado:
         if (!post.getUser().getUserId().equals(UUID.fromString(jwtToken.getName()))) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
