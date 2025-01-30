@@ -4,6 +4,7 @@ import com.meac.springsecurity.controller.dto.CreateUserDTO;
 import com.meac.springsecurity.entities.Role;
 import com.meac.springsecurity.entities.User;
 import com.meac.springsecurity.repositories.RoleRepository;
+import com.meac.springsecurity.services.UserServices;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -19,41 +20,30 @@ import java.util.Set;
 @RestController
 public class UserController {
 
-    private final UserRepository userRepository;
-    private final RoleRepository roleRepository;
-    private final BCryptPasswordEncoder passwordEncoder;
+    private final UserServices userService;
 
-    public UserController(UserRepository userRepository, RoleRepository roleRepository, BCryptPasswordEncoder passwordEncoder) {
-        this.userRepository = userRepository;
-        this.roleRepository = roleRepository;
-        this.passwordEncoder = passwordEncoder;
+    public UserController(UserServices userService) {
+        this.userService = userService;
+
     }
+
 
     @Transactional
     @PostMapping("/users")
     public ResponseEntity<Void> newUser(@RequestBody CreateUserDTO userDTO) {
+        try {
+            userService.createUser(userDTO);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
 
-        var basicRole = roleRepository.findByName(Role.Values.BASIC.name());
-
-        var user =  (userRepository.findByUsername(userDTO.username()));
-        if (user.isPresent()) {
-            throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY);
         }
-
-        User newUser = new User();
-        newUser.setUsername(userDTO.username());
-        newUser.setPassword(passwordEncoder.encode(userDTO.password()));
-        newUser.setRoles(Set.of(basicRole));
-
-        userRepository.save(newUser);
-
-        return ResponseEntity.ok().build();
     }
 
     @GetMapping("/users")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<User>> listUsers() {
-        var users = userRepository.findAll();
+        var users = userService.getAllUsers();
         return ResponseEntity.ok(users);
     }
 
