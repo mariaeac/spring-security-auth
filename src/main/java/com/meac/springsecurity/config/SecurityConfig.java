@@ -40,20 +40,30 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-
         http
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers(HttpMethod.POST, "/login" ).permitAll()
-                        .requestMatchers(HttpMethod.POST, "/users" ).permitAll()
-                        .requestMatchers(HttpMethod.GET, "/users").hasRole("ADMIN") // ROLE_ADMIN
-                        .anyRequest().authenticated())
+
+                        .requestMatchers(
+                                "/api/login",
+                                "/api/users"
+                        ).permitAll()
+
+                        .requestMatchers(
+                                "/swagger-ui/**",
+                                "/v3/api-docs/**",
+                                "/swagger-resources/**",
+                                "/swagger-ui.html",
+                                "/webjars/**"
+                        ).permitAll()
+                       
+                        .requestMatchers(HttpMethod.GET, "api/users").hasRole("ADMIN")
+                        .anyRequest().authenticated()
+                )
                 .csrf(crsf -> crsf.disable())
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
-
         return http.build();
-
     }
 
     @Bean
