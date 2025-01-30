@@ -8,6 +8,8 @@ import com.meac.springsecurity.entities.Role;
 import com.meac.springsecurity.repositories.PostRepository;
 import com.meac.springsecurity.repositories.UserRepository;
 import com.meac.springsecurity.services.PostsServices;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.apache.coyote.Response;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -24,6 +26,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api")
+@Tag(name = "Posts", description = "Operações relacionadas a posts")
 public class PostsController {
 
     public final PostsServices postsServices;
@@ -33,6 +36,7 @@ public class PostsController {
     }
 
     @GetMapping("/feed")
+    @Operation(summary = "Feed geral", description = "Retorna o feed com todos os posts")
     public ResponseEntity<FeedDTO> getAllPosts(
             @RequestParam(value = "page", defaultValue = "0") int page,
             @RequestParam(value = "pageSize", defaultValue = "10") int pageSize
@@ -42,6 +46,8 @@ public class PostsController {
     }
 
     @PostMapping("/posts")
+    @Operation(summary = "Criar post", description = "Crie um novo post")
+
     public ResponseEntity<Void> createPost(@RequestBody CreatePostDTO postDTO, JwtAuthenticationToken  jwtToken) {
         try {
             postsServices.createNewPost(postDTO, jwtToken);
@@ -52,6 +58,7 @@ public class PostsController {
     }
 
     @DeleteMapping(value = "/posts/{id}")
+    @Operation(summary = "Deletar post", description = "Deletar post pelo ID")
     public ResponseEntity<Void> deletePost(@PathVariable("id") Long id, JwtAuthenticationToken jwtToken) {
 
         try {

@@ -4,6 +4,9 @@ import com.meac.springsecurity.controller.dto.LoginResponse;
 import com.meac.springsecurity.entities.Role;
 import com.meac.springsecurity.entities.User;
 import com.meac.springsecurity.repositories.UserRepository;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -22,6 +25,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api")
+@Tag(name = "Login", description = "Operações relacionadas a login / autenticação")
 public class TokenController {
     private final JwtEncoder jwtEncoder;
     private final UserRepository userRepository;
@@ -34,6 +38,7 @@ public class TokenController {
     }
 
     @PostMapping("/login")
+    @Operation(summary = "Endpoint para logar na API", description = "Login")
     public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest loginRequest) {
 
         var instantNow = Instant.now();
